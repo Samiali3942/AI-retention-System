@@ -1,0 +1,119 @@
+<!-- templates/components/sidebar.html -->
+<div class="sidebar" id="sidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <a href="{{ url_for('index') }}" class="sidebar-brand">
+            <i class="fas fa-chart-line"></i>
+            <span>RetentionAI</span>
+        </a>
+        <button class="sidebar-close" id="sidebarClose">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <!-- Main Navigation -->
+        <div class="nav-section">
+            <div class="nav-section-title">Main Navigation</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('index') }}" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span class="nav-link-text">Dashboard</span>
+                        <small class="text-muted">Home</small>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('insights_page') }}" data-page="customer-insights">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-link-text">Customer Insights</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="churn-predictions">
+                        <i class="fas fa-brain"></i>
+                        <span class="nav-link-text">Churn Predictions</span>
+                        <span class="nav-badge warning">89</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="retention-strategies">
+                        <i class="fas fa-bullseye"></i>
+                        <span class="nav-link-text">Retention Strategies</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Data Management -->
+        <div class="nav-section">
+            <div class="nav-section-title">Data Management</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('data_upload_index') }}" data-page="data-upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span class="nav-link-text">Data Upload / Manage</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="reports">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="nav-link-text">Reports</span>
+                        <span class="nav-badge success">New</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Analytics -->
+        <div class="nav-section">
+            <div class="nav-section-title">Analytics</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="risk-analysis">
+                        <i class="fas fa-chart-pie"></i>
+                        <span class="nav-link-text">Risk Distribution</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="high-risk-list">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span class="nav-link-text">High-Risk Customers</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="recommendations">
+                        <i class="fas fa-lightbulb"></i>
+                        <span class="nav-link-text">AI Recommendations</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Settings -->
+        <div class="nav-section">
+            <div class="nav-section-title">Settings</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="profile">
+                        <i class="fas fa-user-cog"></i>
+                        <span class="nav-link-text">Profile Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-link-text">Notifications</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-page="help">
+                        <i class="fas fa-question-circle"></i>
+                        <span class="nav-link-text">Help & Support</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+</div>

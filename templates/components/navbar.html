@@ -1,0 +1,183 @@
+<!-- templates/components/navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top custom-navbar">
+    <div class="container-fluid">
+        <!-- Sidebar Toggle Button -->
+        <button class="btn btn-outline-light me-3 sidebar-toggle" type="button" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Brand/Logo -->
+        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+            <i class="fas fa-chart-line me-2 brand-icon"></i>
+            <span class="brand-text">RetentionAI</span>
+        </a>
+
+        <!-- Navbar Toggler for Mobile -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" 
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Content -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- Search Bar (Optional) -->
+            <div class="navbar-nav me-auto">
+                <form class="d-flex search-form ms-3" role="search">
+                    <div class="input-group">
+                        <input class="form-control search-input" type="search" placeholder="Search customers..." 
+                               aria-label="Search" id="navbarSearch">
+                        <button class="btn btn-outline-light search-btn" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Side Items -->
+            <ul class="navbar-nav ms-auto align-items-center">
+                <!-- Show different content based on authentication status -->
+                {% if current_user and current_user.is_authenticated %}
+                    <!-- Notifications -->
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell notification-icon"></i>
+                            <span class="badge bg-danger notification-badge">3</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdown">
+                            <li><h6 class="dropdown-header">Recent Alerts</h6></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                High churn risk detected for 15 customers
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-upload text-success me-2"></i>
+                                Data upload completed successfully
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-chart-bar text-info me-2"></i>
+                                Weekly retention report ready
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#">View All Notifications</a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Quick Actions -->
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link" href="#" id="quickActionsDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-plus-circle"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickActionsDropdown">
+                            <li><h6 class="dropdown-header">Quick Actions</h6></li>
+                            <li><a class="dropdown-item" href="{{ url_for('data_upload_index') }}">
+                                <i class="fas fa-upload me-2"></i>Upload Data
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('predictions_run_prediction') }}">
+                                <i class="fas fa-brain me-2"></i>Run Prediction
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('reports_generate') }}">
+                                <i class="fas fa-file-export me-2"></i>Generate Report
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- User Profile Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" 
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if current_user.avatar_url %}
+                                <img src="{{ current_user.avatar_url }}" alt="User Avatar" class="rounded-circle me-2" width="32" height="32">
+                            {% else %}
+                                <div class="user-avatar-placeholder me-2">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                            <span class="user-name">{{ current_user.name or 'Admin' }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end user-dropdown" aria-labelledby="userDropdown">
+                            <li class="dropdown-header">
+                                <div class="user-info">
+                                    <strong>{{ current_user.name or 'Admin' }}</strong>
+                                    <small class="text-muted d-block">{{ current_user.email or 'admin@retentionai.com' }}</small>
+                                </div>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-user me-2"></i>Profile Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-cog me-2"></i>Account Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-question-circle me-2"></i>Help & Support
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('auth_logout') }}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Login Button (for non-authenticated users) -->
+                    <li class="nav-item">
+                        <a class="btn btn-outline-light login-btn" href="{{ url_for('login') }}">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Overlay for mobile sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Additional CSS for user dropdown -->
+<style>
+.user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.user-name {
+    font-weight: 500;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-dropdown {
+    min-width: 250px;
+}
+
+.user-info {
+    padding: 0.5rem 0;
+}
+
+.notification-dropdown,
+.user-dropdown {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+    .user-name {
+        display: none;
+    }
+    
+    .search-form {
+        margin: 1rem 0;
+    }
+}
+</style>

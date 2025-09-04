@@ -1,0 +1,288 @@
+/* static/css/navbar.css */
+
+/* Custom Navbar Styles */
+.custom-navbar {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    padding: 0.75rem 0;
+    z-index: 1030;
+    transition: all 0.3s ease;
+}
+
+.custom-navbar.scrolled {
+    background: linear-gradient(135deg, #1a365d 0%, #2c5aa0 100%) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+}
+
+.sidebar-toggle i {
+    font-size: 1.1rem;
+    color: #ffffff;
+}
+
+/* Brand/Logo Styles */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: translateY(-1px);
+}
+
+.brand-icon {
+    font-size: 1.8rem;
+    background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-text {
+    background: linear-gradient(45deg, #ffffff 0%, #e3f2fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Search Form */
+.search-form {
+    max-width: 400px;
+    width: 100%;
+}
+
+.search-input {
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-right: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+    border-radius: 20px 0 0 20px;
+    padding: 0.5rem 1rem;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.search-input:focus {
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+
+.search-btn {
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-left: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0 20px 20px 0;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Notification Styles */
+.notification-icon {
+    font-size: 1.2rem;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover .notification-icon {
+    color: #4facfe;
+    transform: scale(1.1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+    }
+}
+
+/* Dropdown Styles */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.dropdown-header {
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem 0.25rem;
+}
+
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    margin: 0 0.25rem;
+}
+
+.dropdown-item:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    transform: translateX(5px);
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Notification Dropdown Specific */
+.notification-dropdown {
+    width: 320px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-dropdown .dropdown-item {
+    white-space: normal;
+    line-height: 1.4;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.notification-dropdown .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+/* User Profile Styles */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover .user-avatar {
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+}
+
+.user-name {
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.user-dropdown {
+    width: 200px;
+}
+
+/* Sidebar Overlay for Mobile */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive Design */
+@media (max-width: 991.98px) {
+    .search-form {
+        margin: 1rem 0;
+        max-width: 100%;
+    }
+    
+    .user-name {
+        display: none !important;
+    }
+    
+    .custom-navbar {
+        padding: 0.5rem 0;
+    }
+    
+    .notification-dropdown {
+        width: 280px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .brand-text {
+        font-size: 1.2rem;
+    }
+    
+    .brand-icon {
+        font-size: 1.5rem;
+    }
+    
+    .sidebar-toggle {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .search-form {
+        margin: 0.5rem 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .search-form {
+        display: none;
+    }
+    
+    .custom-navbar .container-fluid {
+        padding: 0 1rem;
+    }
+}
