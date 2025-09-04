@@ -6,3 +6,4 @@ joblib
 SQLAlchemy
 Flask-Login
 pytest
+gunicorn
