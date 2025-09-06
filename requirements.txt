@@ -1,0 +1,8 @@
+Flask==2.2.5
+python-dotenv
+pandas
+scikit-learn
+joblib
+SQLAlchemy
+Flask-Login
+pytest
