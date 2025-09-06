@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Fee Optimizer Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 16px;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #dcfce7;
+            color: #166534;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .tab.active {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-bottom: 2px solid #1d4ed8;
+        }
+        
+        .tab:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card.blue { border-left-color: #3b82f6; }
+        .metric-card.green { border-left-color: #10b981; }
+        .metric-card.yellow { border-left-color: #f59e0b; }
+        .metric-card.purple { border-left-color: #8b5cf6; }
+        
+        .metric-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .metric-subtitle {
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+            color: #16a34a;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+        
+        .highlight-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .highlight-card {
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .highlight-card.green { 
+            background: #dcfce7; 
+        }
+        .highlight-card.yellow { 
+            background: #fef3c7; 
+        }
+        .highlight-card.blue { 
+            background: #dbeafe; 
+        }
+        
+        .highlight-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .highlight-card.green .highlight-title { color: #166534; }
+        .highlight-card.yellow .highlight-title { color: #92400e; }
+        .highlight-card.blue .highlight-title { color: #1e40af; }
+        
+        .highlight-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .highlight-card.green .highlight-value { color: #16a34a; }
+        .highlight-card.yellow .highlight-value { color: #d97706; }
+        .highlight-card.blue .highlight-value { color: #2563eb; }
+        
+        .highlight-desc {
+            font-size: 14px;
+        }
+        
+        .highlight-card.green .highlight-desc { color: #166534; }
+        .highlight-card.yellow .highlight-desc { color: #92400e; }
+        .highlight-card.blue .highlight-desc { color: #1e40af; }
+        
+        .alert {
+            background: #fef3c7;
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .alert-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+        
+        .alert-desc {
+            color: #92400e;
+            font-size: 14px;
+        }
+        
+        .segment-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .segment-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .segment-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .segment-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+        
+        .segment-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .model-performance {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .model-card {
+            padding: 20px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 2px solid transparent;
+            transition: transform 0.2s ease;
+        }
+        
+        .model-card:hover {
+            transform: translateY(-1px);
+        }
+        
+        .model-card.best {
+            background: #dcfce7;
+            border-color: #16a34a;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+        
+        .model-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        
+        .model-card.best .model-name {
+            color: #166534;
+        }
+        
+        .model-score {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        
+        .model-card.best .model-score {
+            color: #16a34a;
+        }
+        
+        .model-desc {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        canvas {
+            max-height: 300px !important;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .tab {
+                flex: 1;
+                min-width: 120px;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            
+            .metrics-grid, .charts-grid, .highlight-cards, .segment-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .model-performance {
+                grid-template-columns: 1fr;
+            }
+            
+            .metric-value {
+                font-size: 24px;
+            }
+            
+            .container {
+                padding: 16px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>Dynamic Fee Optimizer Dashboard</h1>
+                <p>Banking Fee Strategy & Revenue Optimization System</p>
+            </div>
+            <div class="status-badge">
+                <span>✅</span>
+                <span>Best Model: Random Forest (AUC: 0.8756)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-target="overview">📊 Overview</button>
+            <button class="tab" data-target="optimization">🎯 Fee Optimization</button>
+            <button class="tab" data-target="simulation">📈 Strategy Simulation</button>
+            <button class="tab" data-target="segments">👥 Customer Segments</button>
+            <button class="tab" data-target="models">⚙ Model Performance</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card blue">
+                    <div class="metric-title">Total Customers</div>
+                    <div class="metric-value">10,000</div>
+                    <div class="metric-subtitle">Active customer base</div>
+                </div>
+                
+                <div class="metric-card green">
+                    <div class="metric-title">Optimal Fee</div>
+                    <div class="metric-value">$12.25</div>
+                    <div class="metric-subtitle">Maximum revenue fee</div>
+                    <div class="trend">↗ +23.4% revenue improvement</div>
+                </div>
+                
+                <div class="metric-card yellow">
+                    <div class="metric-title">Breakpoint</div>
+                    <div class="metric-value">$14.50</div>
+                    <div class="metric-subtitle">Churn acceleration point</div>
+                </div>
+                
+                <div class="metric-card purple">
+                    <div class="metric-title">Avg Balance</div>
+                    <div class="metric-value">$8,456</div>
+                    <div class="metric-subtitle">Per customer</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Customer Distribution by Segment</div>
+                    <canvas id="pieChart" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Fee vs Revenue Analysis</div>
+                    <canvas id="revenueChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fee Optimization Tab -->
+        <div id="optimization" class="tab-content">
+            <div class="alert">
+                <div class="alert-title">⚠ Breakpoint Warning</div>
+                <div class="alert-desc">Setting fees above $14.50 will cause accelerated customer churn. Current optimal fee is $12.25 for maximum revenue.</div>
+            </div>
+
+            <div class="highlight-cards">
+                <div class="highlight-card green">
+                    <div class="highlight-title">Optimal Fee Point</div>
+                    <div class="highlight-value">$12.25</div>
+                    <div class="highlight-desc">Expected Revenue: $89,457</div>
+                </div>
+                
+                <div class="highlight-card yellow">
+                    <div class="highlight-title">Breakpoint Analysis</div>
+                    <div class="highlight-value">$14.50</div>
+                    <div class="highlight-desc">Churn acceleration threshold</div>
+                </div>
+                
+                <div class="highlight-card blue">
+                    <div class="highlight-title">Expected Customers</div>
+                    <div class="highlight-value">7,304</div>
+                    <div class="highlight-desc">At optimal fee level</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Revenue Optimization Curve</div>
+                <canvas id="optimizationChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Strategy Simulation Tab -->
+        <div id="simulation" class="tab-content">
+            <div class="metrics-grid">
+                <div class="metric-card green">
+                    <div class="metric-title">Total Revenue (36 months)</div>
+                    <div class="metric-value">$2.46M</div>
+                    <div class="metric-subtitle">Dynamic strategy</div>
+                </div>
+                
+                <div class="metric-card blue">
+                    <div class="metric-title">Customer Retention</div>
+                    <div class="metric-value">68.4%</div>
+                    <div class="metric-subtitle">Over simulation period</div>
+                </div>
+                
+                <div class="metric-card purple">
+                    <div class="metric-title">Avg Monthly Revenue</div>
+                    <div class="metric-value">$68,244</div>
+                    <div class="metric-subtitle">Per month average</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">36-Month Strategy Simulation Timeline</div>
+                <canvas id="simulationChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Customer Segments Tab -->
+        <div id="segments" class="tab-content">
+            <div class="segment-cards">
+                <div class="segment-card">
+                    <div class="segment-title">Premium Customers</div>
+                    <div class="segment-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Count:</span>
+                            <span class="stat-value">2,000</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Percentage:</span>
+                            <span class="stat-value">20%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Balance:</span>
+                            <span class="stat-value">$25,000</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Age:</span>
+                            <span class="stat-value">36.5 months</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="segment-card">
+                    <div class="segment-title">Standard Customers</div>
+                    <div class="segment-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Count:</span>
+                            <span class="stat-value">5,000</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Percentage:</span>
+                            <span class="stat-value">50%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Balance:</span>
+                            <span class="stat-value">$8,500</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Age:</span>
+                            <span class="stat-value">24.1 months</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="segment-card">
+                    <div class="segment-title">Basic Customers</div>
+                    <div class="segment-stats">
+                        <div class="stat-row">
+                            <span class="stat-label">Count:</span>
+                            <span class="stat-value">3,000</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Percentage:</span>
+                            <span class="stat-value">30%</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Balance:</span>
+                            <span class="stat-value">$2,100</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Avg Age:</span>
+                            <span class="stat-value">18.7 months</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Fee Sensitivity by Customer Segment</div>
+                <canvas id="segmentChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Model Performance Tab -->
+        <div id="models" class="tab-content">
+            <div class="model-performance">
+                <div class="model-card">
+                    <div class="model-name">Logistic Regression</div>
+                    <div class="model-score">0.8234</div>
+                    <div class="model-desc">AUC Score</div>
+                </div>
+                
+                <div class="model-card best">
+                    <div class="model-name">Random Forest ⭐</div>
+                    <div class="model-score">0.8756</div>
+                    <div class="model-desc">AUC Score - Best Model</div>
+                </div>
+                
+                <div class="model-card">
+                    <div class="model-name">Gradient Boosting</div>
+                    <div class="model-score">0.8645</div>
+                    <div class="model-desc">AUC Score</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Feature Importance Analysis</div>
+                <canvas id="featureChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard loading...');
+            
+            try {
+                // Initialize tabs
+                initializeTabs();
+                
+                // Initialize charts with delay to ensure DOM is ready
+                setTimeout(function() {
+                    initializeCharts();
+                    console.log('✅ Dashboard loaded successfully!');
+                }, 100);
+                
+            } catch (error) {
+                console.error('❌ Dashboard initialization error:', error);
+            }
+        });
+        
+        // Tab switching functionality
+        function initializeTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            if (tabs.length === 0) {
+                console.warn('No tabs found');
+                return;
+            }
+            
+            tabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    try {
+                        const targetId = this.getAttribute('data-target');
+                        
+                        // Remove active class from all tabs
+                        tabs.forEach(function(t) {
+                            t.classList.remove('active');
+                        });
+                        
+                        // Hide all tab contents
+                        tabContents.forEach(function(content) {
+                            content.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+                        
+                        // Show selected tab content
+                        const targetContent = document.getElementById(targetId);
+                        if (targetContent) {
+                            targetContent.classList.add('active');
+                        }
+                        
+                        console.log('📋 Switched to tab:', targetId);
+                    } catch (error) {
+                        console.error('❌ Tab switching error:', error);
+                    }
+                });
+            });
+        }
+        
+        // Initialize all charts
+        function initializeCharts() {
+            try {
+                // Set Chart.js defaults
+                if (typeof Chart !== 'undefined') {
+                    Chart.defaults.font = Chart.defaults.font || {};
+                    Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+                    Chart.defaults.color = '#64748b';
+                } else {
+                    console.warn('Chart.js not loaded');
+                    return;
+                }
+
+                // Pie Chart - Customer Distribution
+                createPieChart();
+                
+                // Revenue Chart
+                createRevenueChart();
+                
+                // Optimization Chart
+                createOptimizationChart();
+                
+                // Simulation Chart
+                createSimulationChart();
+                
+                // Segment Chart
+                createSegmentChart();
+                
+                // Feature Chart
+                createFeatureChart();
+                
+            } catch (error) {
+                console.error('❌ Chart initialization error:', error);
+            }
+        }
+        
+        function createPieChart() {
+            const canvas = document.getElementById('pieChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Premium (20%)', 'Standard (50%)', 'Basic (30%)'],
+                        datasets: [{
+                            data: [2000, 5000, 3000],
+                            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Pie chart created');
+            } catch (error) {
+                console.error('❌ Pie chart error:', error);
+            }
+        }
+        
+        function createRevenueChart() {
+            const canvas = document.getElementById('revenueChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['$5', '$6', '$7', '$8', '$9', '$10', '$11', '$12', '$13', '$14', '$15', '$16', '$17', '$18', '$19', '$20'],
+                        datasets: [{
+                            label: 'Revenue ($)',
+                            data: [45000, 52000, 58500, 64200, 69100, 73500, 77200, 80100, 82300, 83800, 84600, 84900, 84500, 83400, 81600, 79200],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Customers',
+                            data: [9000, 8650, 8320, 7980, 7650, 7300, 6950, 6600, 6250, 5900, 5550, 5200, 4850, 4500, 4150, 3800],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue ($)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Customers'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Revenue chart created');
+            } catch (error) {
+                console.error('❌ Revenue chart error:', error);
+            }
+        }
+        
+        function createOptimizationChart() {
+            const canvas = document.getElementById('optimizationChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['$5', '$6', '$7', '$8', '$9', '$10', '$11', '$12', '$13', '$14', '$15', '$16', '$17', '$18', '$19', '$20'],
+                        datasets: [{
+                            label: 'Revenue ($)',
+                            data: [45000, 52000, 58500, 64200, 69100, 73500, 77200, 80100, 82300, 83800, 84600, 84900, 84500, 83400, 81600, 79200],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Churn Rate (%)',
+                            data: [1.0, 1.4, 1.7, 2.0, 2.4, 2.7, 3.1, 3.4, 3.8, 4.1, 4.5, 4.8, 5.2, 5.5, 5.9, 6.2],
+                            borderColor: '#dc2626',
+                            borderWidth: 3,
+                            yAxisID: 'y1'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue ($)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Churn Rate (%)'
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Optimization chart created');
+            } catch (error) {
+                console.error('❌ Optimization chart error:', error);
+            }
+        }
+        
+        function createSimulationChart() {
+            const canvas = document.getElementById('simulationChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                
+                // Generate 36 months of simulation data
+                const simulationData = [];
+                for (let i = 0; i < 36; i++) {
+                    simulationData.push({
+                        month: i + 1,
+                        fee: 5 + (i < 12 ? i * 0.5 : i < 24 ? 6 + (i-12) * 0.3 : 9.6 + (i-24) * 0.2),
+                        customers: Math.max(3000, 10000 - i * 150 - (Math.random() * 100)),
+                        revenue: Math.max(15000, 85000 - i * 800 + (Math.random() * 5000))
+                    });
+                }
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: simulationData.map(d => 'M' + d.month),
+                        datasets: [{
+                            label: 'Monthly Revenue ($)',
+                            data: simulationData.map(d => Math.round(d.revenue)),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true
+                        }, {
+                            label: 'Customer Count',
+                            data: simulationData.map(d => Math.round(d.customers)),
+                            borderColor: '#10b981',
+                            yAxisID: 'y1'
+                        }, {
+                            label: 'Fee ($)',
+                            data: simulationData.map(d => d.fee.toFixed(2)),
+                            borderColor: '#f59e0b',
+                            yAxisID: 'y2'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: {
+                                    display: true,
+                                    text: 'Revenue ($)'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Customers'
+                                }
+                            },
+                            y2: {
+                                type: 'linear',
+                                display: false
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Simulation chart created');
+            } catch (error) {
+                console.error('❌ Simulation chart error:', error);
+            }
+        }
+        
+        function createSegmentChart() {
+            const canvas = document.getElementById('segmentChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['$5', '$10', '$15', '$20'],
+                        datasets: [{
+                            label: 'Premium Revenue',
+                            data: [9800, 18900, 26250, 30000],
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        }, {
+                            label: 'Standard Revenue',
+                            data: [24500, 45500, 56250, 60000],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        }, {
+                            label: 'Basic Revenue',
+                            data: [14700, 24000, 27000, 24000],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Expected Revenue ($)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Fee Level'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Segment chart created');
+            } catch (error) {
+                console.error('❌ Segment chart error:', error);
+            }
+        }
+        
+        function createFeatureChart() {
+            const canvas = document.getElementById('featureChart');
+            if (!canvas) return;
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Maintenance Fee', 'Avg Balance', 'Fee/Balance Ratio', 'Account Age', 'Premium Segment'],
+                        datasets: [{
+                            label: 'Feature Importance',
+                            data: [0.2456, 0.2103, 0.1876, 0.1234, 0.0987],
+                            backgroundColor: [
+                                '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'
+                            ],
+                            borderColor: [
+                                '#1e40af', '#059669', '#d97706', '#7c3aed', '#dc2626'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 0.3,
+                                title: {
+                                    display: true,
+                                    text: 'Importance Score'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Features'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('✅ Feature chart created');
+            } catch (error) {
+                console.error('❌ Feature chart error:', error);
+            }
+        }
+        
+        // Add real-time status updates
+        function updateStatus() {
+            try {
+                const statusBadge = document.querySelector('.status-badge span:last-child');
+                if (statusBadge) {
+                    const currentTime = new Date().toLocaleTimeString();
+                    statusBadge.textContent = `System Active - Last Updated: ${currentTime}`;
+
+                }
+            } catch (error) {
+                console.error('❌ Status update error:', error);
+            }
+        }
+        
+        // Update status every 30 seconds
+        setInterval(updateStatus, 30000);
+        
+        // Add error handling for the entire page
+        window.addEventListener('error', function(event) {
+            console.error('❌ Global error:', event.error);
+        });
+        
+        // Log successful initialization
+        console.log('🏦 Dynamic Fee Optimizer Dashboard');
+        console.log('📊 Features: Interactive tabs, real-time charts, responsive design');
+        console.log('🎯 Ready for Python backend integration');
+        
+    </script>
+</body>
+</html>

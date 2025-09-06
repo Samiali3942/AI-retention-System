@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Customer Complaint Analysis Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .filter-dropdown {
+            position: relative;
+            display: none;
+        }
+
+        .filter-dropdown.active {
+            display: block;
+        }
+
+        .dropdown-select {
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 1em;
+            min-width: 200px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .dropdown-select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .analysis-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .analysis-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-analysis {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #3498db;
+        }
+
+        .card-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .complaints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .complaint-card {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(253, 203, 110, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .complaint-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .complaint-rank {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e17055;
+            margin-bottom: 10px;
+        }
+
+        .complaint-title {
+            font-size: 1.3em;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .complaint-stats {
+            color: #636e72;
+            line-height: 1.6;
+        }
+
+        .strategies-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .strategies-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .strategy-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .strategy-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #27ae60;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+
+        .strategy-item h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .strategy-item p {
+            color: #5a6c7d;
+            line-height: 1.6;
+        }
+
+        .overview-charts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .chart-container canvas {
+            max-height: 300px !important;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 112, 85, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .filter-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .dropdown-select {
+                min-width: 100%;
+            }
+
+            .complaints-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bank Customer Complaint Analysis</h1>
+            <p>Comprehensive analysis of customer complaints with predictive modeling and business insights</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Key Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">6,000</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">73.2%</div>
+                    <div class="stat-label">Complaint Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">22.5%</div>
+                    <div class="stat-label">Churn Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">84.3%</div>
+                    <div class="stat-label">Model Accuracy</div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">Analysis Filters</h3>
+                <div class="filter-controls">
+                    <button class="filter-btn" onclick="toggleFilter()">Filter by Card Category</button>
+                    <div class="filter-dropdown" id="filterDropdown">
+                        <select class="dropdown-select" id="cardSelect" onchange="showCardAnalysis()">
+                            <option value="">Select Card Category</option>
+                            <option value="basic">Basic/Blue Card</option>
+                            <option value="silver">Silver Card</option>
+                            <option value="gold">Gold Card</option>
+                            <option value="platinum">Platinum Card</option>
+                            <option value="titanium">Titanium Card</option>
+                            <option value="signature">Signature Card</option>
+                            <option value="infinite">Infinite/Black Card</option>
+                        </select>
+                    </div>
+                    <button class="reset-btn" onclick="resetAnalysis()">Reset View</button>
+                </div>
+            </div>
+
+            <!-- Overview Charts -->
+            <div class="overview-charts" id="overviewCharts">
+                <div class="chart-container">
+                    <div class="chart-title">Complaint Distribution by Category</div>
+                    <canvas id="complaintDistributionChart" width="400" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Churn Rate by Card Category</div>
+                    <canvas id="churnRateChart" width="400" height="300"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Complaints by Card Category</div>
+                    <canvas id="complaintsByCardChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+            <!-- Card-Specific Analysis -->
+            <div class="analysis-section" id="cardAnalysis">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Sample data for different card categories
+        const cardData = {
+            basic: {
+                name: "Basic/Blue Card",
+                icon: "💳",
+                totalCustomers: 1800,
+                churnRate: 35.2,
+                avgRating: 2.8,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "High Maintenance Fees",
+                        percentage: 28,
+                        customers: 504,
+                        description: "Customers complaining about $15-25 monthly maintenance fees being too high for basic services"
+                    },
+                    {
+                        rank: 2,
+                        title: "Low Credit Limits",
+                        percentage: 22,
+                        customers: 396,
+                        description: "Credit limits of $1,000-$5,000 considered insufficient for customer needs"
+                    },
+                    {
+                        rank: 3,
+                        title: "Poor Customer Service",
+                        percentage: 18,
+                        customers: 324,
+                        description: "Long wait times and inadequate support from customer service representatives"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Fee Restructuring",
+                        description: "Implement tiered fee structure based on account balance or introduce fee-free basic accounts for students and seniors"
+                    },
+                    {
+                        title: "Credit Limit Review",
+                        description: "Develop automated credit limit review system to increase limits for customers with good payment history"
+                    },
+                    {
+                        title: "Service Enhancement",
+                        description: "Implement callback system to reduce wait times and provide dedicated support channels for basic card holders"
+                    }
+                ]
+            },
+            silver: {
+                name: "Silver Card",
+                icon: "🥈",
+                totalCustomers: 1500,
+                churnRate: 28.4,
+                avgRating: 3.2,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Limited Rewards Program",
+                        percentage: 24,
+                        customers: 360,
+                        description: "Cashback rates and rewards considered inferior compared to competitor offerings"
+                    },
+                    {
+                        rank: 2,
+                        title: "ATM Fee Issues",
+                        percentage: 20,
+                        customers: 300,
+                        description: "High ATM fees and limited fee-free ATM network access"
+                    },
+                    {
+                        rank: 3,
+                        title: "Online Banking Problems",
+                        percentage: 17,
+                        customers: 255,
+                        description: "Website crashes, slow loading times, and mobile app functionality issues"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Rewards Enhancement",
+                        description: "Increase cashback rates to 1.5% on all purchases and introduce bonus categories for gas and groceries"
+                    },
+                    {
+                        title: "ATM Network Expansion",
+                        description: "Partner with additional ATM networks and reimburse fees for first 5 transactions per month"
+                    },
+                    {
+                        title: "Digital Platform Upgrade",
+                        description: "Invest in modern banking platform with improved mobile app functionality and faster response times"
+                    }
+                ]
+            },
+            gold: {
+                name: "Gold Card",
+                icon: "🥇",
+                totalCustomers: 1200,
+                churnRate: 22.8,
+                avgRating: 3.6,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Travel Benefits Issues",
+                        percentage: 26,
+                        customers: 312,
+                        description: "Travel insurance claims processing delays and limited airport lounge access"
+                    },
+                    {
+                        rank: 2,
+                        title: "Annual Fee Concerns",
+                        percentage: 21,
+                        customers: 252,
+                        description: "Annual fee of $95-150 not justified by provided benefits and services"
+                    },
+                    {
+                        rank: 3,
+                        title: "Purchase Protection Claims",
+                        percentage: 19,
+                        customers: 228,
+                        description: "Complicated claims process for purchase protection and extended warranty benefits"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Travel Benefits Streamlining",
+                        description: "Simplify travel insurance claims process and expand airport lounge partnerships globally"
+                    },
+                    {
+                        title: "Annual Fee Justification",
+                        description: "Add more valuable perks like dining credits, streaming service benefits, and exclusive offers"
+                    },
+                    {
+                        title: "Claims Process Improvement",
+                        description: "Implement digital claims submission with AI-powered processing for faster resolution"
+                    }
+                ]
+            },
+            platinum: {
+                name: "Platinum Card",
+                icon: "💎",
+                totalCustomers: 900,
+                churnRate: 18.5,
+                avgRating: 4.1,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Concierge Service Quality",
+                        percentage: 23,
+                        customers: 207,
+                        description: "Concierge service unable to fulfill requests or provide adequate assistance"
+                    },
+                    {
+                        rank: 2,
+                        title: "Reward Redemption Limits",
+                        percentage: 20,
+                        customers: 180,
+                        description: "Limited availability for premium reward redemptions and blackout dates"
+                    },
+                    {
+                        rank: 3,
+                        title: "Interest Rate Concerns",
+                        percentage: 18,
+                        customers: 162,
+                        description: "High interest rates despite premium card status and excellent credit scores"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Concierge Service Upgrade",
+                        description: "Partner with premium concierge services and provide 24/7 multilingual support for complex requests"
+                    },
+                    {
+                        title: "Reward Flexibility",
+                        description: "Expand reward inventory and reduce blackout restrictions, especially for travel redemptions"
+                    },
+                    {
+                        title: "Interest Rate Optimization",
+                        description: "Offer promotional 0% APR periods and competitive rates based on relationship banking"
+                    }
+                ]
+            },
+            titanium: {
+                name: "Titanium Card",
+                icon: "⚡",
+                totalCustomers: 300,
+                churnRate: 15.2,
+                avgRating: 4.4,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Exclusive Event Access",
+                        percentage: 25,
+                        customers: 75,
+                        description: "Limited availability for exclusive events and experiences despite premium status"
+                    },
+                    {
+                        rank: 2,
+                        title: "Personal Banking Service",
+                        percentage: 22,
+                        customers: 66,
+                        description: "Dedicated relationship manager not always available or knowledgeable enough"
+                    },
+                    {
+                        rank: 3,
+                        title: "International Service Issues",
+                        percentage: 19,
+                        customers: 57,
+                        description: "Card blocked during international travel without proper notification systems"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Exclusive Experiences Expansion",
+                        description: "Partner with luxury brands and create members-only events in major cities worldwide"
+                    },
+                    {
+                        title: "Relationship Manager Enhancement",
+                        description: "Provide specialized training and reduce client-to-manager ratios for more personalized service"
+                    },
+                    {
+                        title: "International Services",
+                        description: "Implement smart travel notification system and provide 24/7 international support hotline"
+                    }
+                ]
+            },
+            signature: {
+                name: "Signature Card",
+                icon: "✨",
+                totalCustomers: 180,
+                churnRate: 12.8,
+                avgRating: 4.6,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Investment Service Access",
+                        percentage: 27,
+                        customers: 49,
+                        description: "Limited access to exclusive investment opportunities and wealth management services"
+                    },
+                    {
+                        rank: 2,
+                        title: "Lifestyle Concierge Limitations",
+                        percentage: 24,
+                        customers: 43,
+                        description: "Concierge unable to handle ultra-luxury requests or provide white-glove services"
+                    },
+                    {
+                        rank: 3,
+                        title: "Credit Limit Flexibility",
+                        percentage: 21,
+                        customers: 38,
+                        description: "Insufficient credit limit increases despite significant wealth and income growth"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "Investment Platform Integration",
+                        description: "Provide access to private banking, hedge funds, and pre-IPO investment opportunities"
+                    },
+                    {
+                        title: "Ultra-Luxury Concierge",
+                        description: "Partner with global luxury service providers for yacht charters, private jets, and exclusive venues"
+                    },
+                    {
+                        title: "Dynamic Credit Management",
+                        description: "Implement real-time credit limit adjustments based on deposits and investment portfolio value"
+                    }
+                ]
+            },
+            infinite: {
+                name: "Infinite/Black Card",
+                icon: "♠",
+                totalCustomers: 120,
+                churnRate: 8.5,
+                avgRating: 4.8,
+                complaints: [
+                    {
+                        rank: 1,
+                        title: "Ultra-Premium Service Expectations",
+                        percentage: 30,
+                        customers: 36,
+                        description: "Service quality doesn't match the ultra-premium positioning and annual fees"
+                    },
+                    {
+                        rank: 2,
+                        title: "Global Recognition Issues",
+                        percentage: 26,
+                        customers: 31,
+                        description: "Card not recognized or accepted at some luxury establishments worldwide"
+                    },
+                    {
+                        rank: 3,
+                        title: "Personalization Limits",
+                        percentage: 22,
+                        customers: 26,
+                        description: "Insufficient customization and personalization options for individual preferences"
+                    }
+                ],
+                strategies: [
+                    {
+                        title: "White-Glove Service Standard",
+                        description: "Implement highest-tier service protocols with dedicated teams and instant response guarantees"
+                    },
+                    {
+                        title: "Global Partnership Expansion",
+                        description: "Establish acceptance agreements with all luxury hotels, restaurants, and exclusive venues worldwide"
+                    },
+                    {
+                        title: "Hyper-Personalization",
+                        description: "Develop AI-driven personalization engine for customized offers, services, and experiences"
+                    }
+                ]
+            }
+        };
+
+        // Chart variables - removed ratingChart
+        let complaintChart, churnChart, complaintsByCardChart;
+        let filterOpen = false;
+
+        // Sample data for charts - removed ratingDistribution
+        const chartData = {
+            complaintDistribution: {
+                labels: ['Maintenance Fee', 'Customer Service', 'Credit Limit', 'Card Issues', 'Online Banking', 'ATM Issues', 'Branch Service', 'Others'],
+                data: [18.2, 16.1, 14.3, 12.5, 10.8, 8.7, 7.9, 11.5],
+                colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3', '#54A0FF', '#5F27CD']
+            },
+            churnByCard: {
+                labels: ['Basic/Blue', 'Silver', 'Gold', 'Platinum', 'Titanium', 'Signature', 'Infinite/Black'],
+                data: [35.2, 28.4, 22.8, 18.5, 15.2, 12.8, 8.5],
+                colors: ['#FF6B6B', '#FF8E53', '#FF9F43', '#FFC048', '#32D74B', '#007AFF', '#5856D6']
+            },
+            complaintsByCard: {
+                labels: ['Basic/Blue', 'Silver', 'Gold', 'Platinum', 'Titanium', 'Signature', 'Infinite/Black'],
+                data: [720, 525, 342, 195, 57, 32, 12],
+                colors: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b']
+            }
+        };
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        function initializeCharts() {
+            // Complaint Distribution Doughnut Chart
+            const ctx1 = document.getElementById('complaintDistributionChart').getContext('2d');
+            complaintChart = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.complaintDistribution.labels,
+                    datasets: [{
+                        data: chartData.complaintDistribution.data,
+                        backgroundColor: chartData.complaintDistribution.colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Churn Rate Bar Chart
+            const ctx2 = document.getElementById('churnRateChart').getContext('2d');
+            churnChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: chartData.churnByCard.labels,
+                    datasets: [{
+                        label: 'Churn Rate (%)',
+                        data: chartData.churnByCard.data,
+                        backgroundColor: chartData.churnByCard.colors,
+                        borderWidth: 1,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Churn Rate: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 40,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: '#e3e6f0'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                font: { size: 10 }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Complaints by Card Category Bar Chart
+            const ctx3 = document.getElementById('complaintsByCardChart').getContext('2d');
+            complaintsByCardChart = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: chartData.complaintsByCard.labels,
+                    datasets: [{
+                        label: 'Number of Complaints',
+                        data: chartData.complaintsByCard.data,
+                        backgroundColor: chartData.complaintsByCard.colors,
+                        borderWidth: 1,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Complaints: ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            },
+                            grid: {
+                                color: '#e3e6f0'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                font: { size: 10 }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleFilter() {
+            const dropdown = document.getElementById('filterDropdown');
+            filterOpen = !filterOpen;
+            dropdown.classList.toggle('active', filterOpen);
+        }
+
+        function showCardAnalysis() {
+            const selectedCard = document.getElementById('cardSelect').value;
+            const analysisSection = document.getElementById('cardAnalysis');
+            const overviewCharts = document.getElementById('overviewCharts');
+
+            if (!selectedCard) {
+                analysisSection.classList.remove('active');
+                overviewCharts.style.display = 'grid';
+                return;
+            }
+
+            overviewCharts.style.display = 'none';
+            const data = cardData[selectedCard];
+            
+            analysisSection.innerHTML = `
+                <div class="card-analysis">
+                    <div class="card-title">
+                        <div class="card-icon">${data.icon}</div>
+                        ${data.name} Analysis
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${data.totalCustomers.toLocaleString()}</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.churnRate}%</div>
+                            <div class="stat-label">Churn Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.avgRating}</div>
+                            <div class="stat-label">Avg Rating</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 30px 0 20px; color: #2c3e50;">Top 3 Complaints</h3>
+                    <div class="complaints-grid">
+                        ${data.complaints.map(complaint => `
+                            <div class="complaint-card">
+                                <div class="complaint-rank">#${complaint.rank}</div>
+                                <div class="complaint-title">${complaint.title}</div>
+                                <div class="complaint-stats">
+                                    <strong>${complaint.percentage}%</strong> of complaints<br>
+                                    <strong>${complaint.customers.toLocaleString()}</strong> customers affected<br><br>
+                                    ${complaint.description}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="strategies-section">
+                        <div class="strategies-title">
+                            <span style="font-size: 1.5em;">🎯</span>
+                            Business Strategies & Recommendations
+                        </div>
+                        <div class="strategy-list">
+                            ${data.strategies.map(strategy => `
+                                <div class="strategy-item">
+                                    <h4>${strategy.title}</h4>
+                                    <p>${strategy.description}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            analysisSection.classList.add('active');
+        }
+
+        function resetAnalysis() {
+            document.getElementById('cardSelect').value = '';
+            document.getElementById('cardAnalysis').classList.remove('active');
+            const overviewCharts = document.getElementById('overviewCharts');
+            overviewCharts.style.display = 'grid';
+            document.getElementById('filterDropdown').classList.remove('active');
+            filterOpen = false;
+            
+            // Re-initialize charts if they were destroyed
+            if (!complaintChart || complaintChart.canvas === null) {
+                setTimeout(initializeCharts, 100);
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const filterSection = document.querySelector('.filter-section');
+            const dropdown = document.getElementById('filterDropdown');
+            
+            if (!filterSection.contains(event.target) && filterOpen) {
+                dropdown.classList.remove('active');
+                filterOpen = false;
+            }
+        });
+    </script>
+</body>
+</html>

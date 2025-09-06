@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KYC Churn Prediction Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border-left: 5px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-card.danger { border-color: #e74c3c; }
+        .stat-card.warning { border-color: #f39c12; }
+        .stat-card.success { border-color: #27ae60; }
+        .stat-card.info { border-color: #3498db; }
+        
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        
+        .customer-search {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 70%;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-right: 10px;
+        }
+        
+        .search-btn {
+            padding: 12px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: #2980b9;
+        }
+        
+        .customer-result {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .risk-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        
+        .risk-high { background: #e74c3c; color: white; }
+        .risk-medium { background: #f39c12; color: white; }
+        .risk-low { background: #27ae60; color: white; }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .recommendations {
+            grid-column: 1 / -1;
+        }
+        
+        .rec-section {
+            margin-bottom: 25px;
+        }
+        
+        .rec-section h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .rec-list {
+            list-style: none;
+        }
+        
+        .rec-list li {
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            transition: background 0.3s ease;
+        }
+        
+        .rec-list li:hover {
+            background: #e3f2fd;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #7f8c8d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🏦 KYC Churn Prediction Dashboard</h1>
+            <p>AI-Powered Customer Risk Analysis & Retention Intelligence</p>
+        </div>
+        
+        <!-- Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card danger">
+                <div class="stat-number">487</div>
+                <div class="stat-label">High-Risk Customers</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-number">1,247</div>
+                <div class="stat-label">Medium-Risk Customers</div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-number">3,266</div>
+                <div class="stat-label">Low-Risk Customers</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-number">87.3%</div>
+                <div class="stat-label">Model Accuracy (AUC)</div>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard Grid -->
+        <div class="main-grid">
+            <!-- Customer Risk Analysis -->
+            <div class="panel">
+                <h3>🔍 Individual Customer Analysis</h3>
+                <div class="customer-search">
+                    <input type="number" class="search-input" id="customerIdInput" placeholder="Enter Customer ID (1-5000)">
+                    <button class="search-btn" onclick="analyzeCustomer()">Analyze</button>
+                </div>
+                <div id="customerResult" class="customer-result" style="display: none;">
+                    <div class="risk-badge risk-high">High Risk - 0.847</div>
+                    <h4>Customer #1001 Analysis</h4>
+                    <p><strong>Status:</strong> Active</p>
+                    <div style="margin-top: 15px;">
+                        <p><strong>KYC Metrics:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 5px;">
+                            <li>Failed Verifications: 5</li>
+                            <li>Document Rejection Rate: 78.5%</li>
+                            <li>KYC Approval Days: 12.3</li>
+                            <li>Friction Score: 3.42</li>
+                            <li>Support Tickets: 3</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Risk Distribution Chart -->
+            <div class="panel">
+                <h3>📊 Risk Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabbed Content -->
+        <div class="panel">
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="showTab('high-risk')">🎯 High-Risk Customers</button>
+                    <button class="tab-btn" onclick="showTab('recommendations')">💡 Business Recommendations</button>
+                    <button class="tab-btn" onclick="showTab('model-performance')">📈 Model Performance</button>
+                </div>
+                
+                <!-- High-Risk Customers Tab -->
+                <div id="high-risk" class="tab-content active">
+                    <h3>Top 10 Highest Risk Customers</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Customer ID</th>
+                                <th>Risk Probability</th>
+                                <th>Failed Verifications</th>
+                                <th>Approval Days</th>
+                                <th>Friction Score</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="highRiskTable">
+                            <tr>
+                                <td>4523</td>
+                                <td><span class="risk-badge risk-high">0.934</span></td>
+                                <td>7</td>
+                                <td>18.2</td>
+                                <td>4.12</td>
+                                <td>Active</td>
+                            </tr>
+                            <tr>
+                                <td>2847</td>
+                                <td><span class="risk-badge risk-high">0.921</span></td>
+                                <td>6</td>
+                                <td>15.7</td>
+                                <td>3.89</td>
+                                <td>Churned</td>
+                            </tr>
+                            <tr>
+                                <td>1203</td>
+                                <td><span class="risk-badge risk-high">0.898</span></td>
+                                <td>8</td>
+                                <td>22.1</td>
+                                <td>4.45</td>
+                                <td>Active</td>
+                            </tr>
+                            <tr>
+                                <td>3751</td>
+                                <td><span class="risk-badge risk-high">0.887</span></td>
+                                <td>5</td>
+                                <td>16.3</td>
+                                <td>3.67</td>
+                                <td>Active</td>
+                            </tr>
+                            <tr>
+                                <td>4892</td>
+                                <td><span class="risk-badge risk-high">0.876</span></td>
+                                <td>9</td>
+                                <td>19.8</td>
+                                <td>4.23</td>
+                                <td>Churned</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Recommendations Tab -->
+                <div id="recommendations" class="tab-content">
+                    <div class="rec-section">
+                        <h4>🚨 Immediate Actions</h4>
+                        <ul class="rec-list">
+                            <li><strong>URGENT:</strong> 487 customers at high risk of churning - deploy retention team immediately</li>
+                            <li><strong>PRIORITY:</strong> Contact 89 customers with >2 KYC support tickets within 24 hours</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rec-section">
+                        <h4>⚙ Process Improvements</h4>
+                        <ul class="rec-list">
+                            <li>Reduce KYC approval time - high-risk customers average 14.2 days vs 7.1 days for low-risk</li>
+                            <li>Review document rejection workflow - 73% correlation with churn probability</li>
+                            <li>Implement proactive outreach for customers with >3 failed verifications</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="rec-section">
+                        <h4>🎯 Strategic Initiatives</h4>
+                        <ul class="rec-list">
+                            <li>Deploy fast-track KYC process for customers showing early friction signs</li>
+                            <li>Implement real-time friction monitoring dashboard for operations team</li>
+                            <li>Develop automated intervention workflows based on risk scores</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Model Performance Tab -->
+                <div id="model-performance" class="tab-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <div>
+                            <h4>🤖 Model Comparison</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>AUC Score</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="background: #e8f5e8;">
+                                        <td><strong>Gradient Boosting</strong> ⭐</td>
+                                        <td><strong>0.8734</strong></td>
+                                        <td>0.821</td>
+                                        <td>0.789</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Random Forest</td>
+                                        <td>0.8612</td>
+                                        <td>0.798</td>
+                                        <td>0.776</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Logistic Regression</td>
+                                        <td>0.8453</td>
+                                        <td>0.782</td>
+                                        <td>0.754</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div>
+                            <h4>🎯 Top Feature Importance</h4>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Feature</th>
+                                        <th>Importance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>KYC Friction Score</td>
+                                        <td>0.284</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Failed Verifications</td>
+                                        <td>0.197</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Document Rejection Rate</td>
+                                        <td>0.156</td>
+                                    </tr>
+                                    <tr>
+                                        <td>KYC Approval Days</td>
+                                        <td>0.143</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Support Tickets</td>
+                                        <td>0.098</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize Risk Distribution Chart
+        const ctx = document.getElementById('riskChart').getContext('2d');
+        const riskChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+                datasets: [{
+                    data: [487, 1247, 3266],
+                    backgroundColor: [
+                        '#e74c3c',
+                        '#f39c12', 
+                        '#27ae60'
+                    ],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+        
+        // Simulate customer analysis
+        function analyzeCustomer() {
+            const customerId = document.getElementById('customerIdInput').value;
+            const resultDiv = document.getElementById('customerResult');
+            
+            if (customerId && customerId >= 1 && customerId <= 5000) {
+                // Simulate analysis result
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div class="risk-badge risk-high">High Risk - 0.${Math.floor(Math.random() * 200 + 750)}</div>
+                    <h4>Customer #${customerId} Analysis</h4>
+                    <p><strong>Status:</strong> ${Math.random() > 0.3 ? 'Active' : 'Churned'}</p>
+                    <div style="margin-top: 15px;">
+                        <p><strong>KYC Metrics:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 5px;">
+                            <li>Failed Verifications: ${Math.floor(Math.random() * 8 + 1)}</li>
+                            <li>Document Rejection Rate: ${(Math.random() * 0.8 + 0.1).toFixed(1)}%</li>
+                            <li>KYC Approval Days: ${(Math.random() * 20 + 5).toFixed(1)}</li>
+                            <li>Friction Score: ${(Math.random() * 3 + 1).toFixed(2)}</li>
+                            <li>Support Tickets: ${Math.floor(Math.random() * 5)}</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                alert('Please enter a valid Customer ID (1-5000)');
+            }
+        }
+        
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate numbers on load
+            const statNumbers = document.querySelectorAll('.stat-number');
+            statNumbers.forEach(stat => {
+                const finalValue = stat.textContent;
+                stat.textContent = '0';
+                
+                let current = 0;
+                const increment = parseFloat(finalValue.replace(/[^\d.]/g, '')) / 50;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= parseFloat(finalValue.replace(/[^\d.]/g, ''))) {
+                        stat.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        if (finalValue.includes('%')) {
+                            stat.textContent = Math.floor(current) + '%';
+                        } else {
+                            stat.textContent = Math.floor(current).toLocaleString();
+                        }
+                    }
+                }, 50);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        
+        .header-subtitle {
+            color: #6b7280;
+        }
+        
+        .filters {
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 9999px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover {
+            opacity: 1 !important;
+        }
+        
+        .filter-btn.active {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-btn:not(.active) {
+            opacity: 0.8;
+        }
+        
+        .btn-all { background-color: #6b7280; }
+        .btn-high-value { background-color: #10b981; }
+        .btn-loyal { background-color: #3b82f6; }
+        .btn-stable { background-color: #8b5cf6; }
+        .btn-at-risk { background-color: #ef4444; }
+        .btn-dormant { background-color: #f97316; }
+        
+        .table-section {
+            padding: 24px;
+        }
+        
+        .table-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .table-info p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: #1f2937;
+            color: white;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        td {
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        tr:nth-child(odd) {
+            background-color: white;
+        }
+        
+        .segment-badge {
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .segment-high-value {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .segment-loyal {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .segment-stable {
+            background-color: #ede9fe;
+            color: #7c2d12;
+        }
+        
+        .segment-at-risk {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .segment-dormant {
+            background-color: #fed7aa;
+            color: #9a3412;
+        }
+        
+        .send-offer-btn {
+            background-color: #f97316;
+            color: white;
+            padding: 4px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .send-offer-btn:hover {
+            background-color: #ea580c;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 448px;
+            width: 100%;
+            margin: 16px;
+        }
+        
+        .modal-content {
+            padding: 24px;
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .modal-icon {
+            background-color: #fed7aa;
+            border-radius: 50%;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .modal-details {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+        
+        .modal-section {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .modal-section-title {
+            font-weight: 500;
+        }
+        
+        .modal-list {
+            margin-top: 4px;
+        }
+        
+        .modal-list li {
+            margin-bottom: 4px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .modal-ok-btn {
+            background-color: #3b82f6;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .modal-ok-btn:hover {
+            background-color: #2563eb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <i data-feather="gift" style="width: 24px; height: 24px; color: #4f46e5;"></i>
+                <h1 class="header-title">Personalized Offers Dashboard</h1>
+            </div>
+            <p class="header-subtitle">Manage and send targeted offers to customers based on their segments</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-buttons">
+                <button class="filter-btn btn-all active" data-segment="All">All</button>
+                <button class="filter-btn btn-high-value" data-segment="High Value">High Value</button>
+                <button class="filter-btn btn-loyal" data-segment="Loyal">Loyal</button>
+                <button class="filter-btn btn-stable" data-segment="Stable">Stable</button>
+                <button class="filter-btn btn-at-risk" data-segment="At Risk">At Risk</button>
+                <button class="filter-btn btn-dormant" data-segment="Dormant">Dormant</button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section">
+            <div class="table-info">
+                <p id="showing-count">Showing 50 customers</p>
+                <p>Total customers: 10127</p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>CLIENT ID</th>
+                            <th>ATTRITION FLAG</th>
+                            <th>CUSTOMER AGE</th>
+                            <th>GENDER</th>
+                            <th>INCOME CATEGORY</th>
+                            <th>CARD CATEGORY</th>
+                            <th>SEGMENT</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customers-table">
+                        <!-- Customer rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal-overlay hidden">
+        <div class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-icon">
+                        <i data-feather="bell" style="width: 20px; height: 20px; color: #ea580c;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h3 class="modal-title">OFFER SENT SUCCESSFULLY!</h3>
+                        
+                        <div class="modal-details">
+                            <div class="modal-section">
+                                <span>📋</span>
+                                <div>
+                                    <p class="modal-section-title">Customer Details:</p>
+                                    <ul class="modal-list" id="customer-details">
+                                        <!-- Customer details will be inserted here -->
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="modal-section">
+                                <span>🎯</span>
+                                <div>
+                                    <p class="modal-section-title">Recommended Offers:</p>
+                                    <p id="recommended-offers" style="margin-top: 4px;"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="modal-ok-btn" onclick="closeModal()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Customer data generation
+        const segments = ['High Value', 'Loyal', 'Stable', 'At Risk', 'Dormant'];
+        const genders = ['M', 'F'];
+        const incomeCategories = ['Less than $40K', '$40K - $60K', '$60K - $80K', '$80K - $120K', '$120K +'];
+        const cardCategories = ['Blue', 'Silver', 'Gold', 'Platinum'];
+        const ages = [25, 30, 35, 40, 45, 50, 55, 60, 65];
+        
+        const offerMapping = {
+            "At Risk": ["Retention Discount / Cashback", "Personalized Outreach / Call", "Loyalty Points Boost"],
+            "Dormant": ["Reactivation Campaign", "Limited-time Incentives", "Feature Reminder / App Engagement"],
+            "High Value": ["VIP Treatment / Premium Offers", "Concierge / Priority Service", "Exclusive Rewards"],
+            "Loyal": ["Referral Programs", "Premium Perks", "Anniversary / Milestone Gifts"],
+            "Stable": ["Gradual Upsell / Cross-sell", "Regular Engagement Notifications", "Periodic Rewards"]
+        };
+
+        let customers = [];
+        let selectedSegment = 'All';
+
+        function generateCustomers() {
+            segments.forEach(segment => {
+                for (let i = 0; i < 12; i++) {
+                    const customerId = Math.floor(Math.random() * 900000000) + 100000000;
+                    const age = ages[Math.floor(Math.random() * ages.length)];
+                    const gender = genders[Math.floor(Math.random() * genders.length)];
+                    const income = incomeCategories[Math.floor(Math.random() * incomeCategories.length)];
+                    const card = cardCategories[Math.floor(Math.random() * cardCategories.length)];
+                    const attritionFlag = segment === 'At Risk' ? 'Attrited Customer' : 'Existing Customer';
+                    const offers = offerMapping[segment];
+                    
+                    customers.push({
+                        clientId: customerId,
+                        attritionFlag,
+                        age,
+                        gender,
+                        incomeCategory: income,
+                        cardCategory: card,
+                        segment,
+                        recommendedOffers: offers
+                    });
+                }
+            });
+        }
+
+        function getSegmentClass(segment) {
+            const classes = {
+                'High Value': 'segment-high-value',
+                'Loyal': 'segment-loyal',
+                'Stable': 'segment-stable',
+                'At Risk': 'segment-at-risk',
+                'Dormant': 'segment-dormant'
+            };
+            return classes[segment] || 'segment-high-value';
+        }
+
+        function renderCustomers() {
+            const tbody = document.getElementById('customers-table');
+            const filteredCustomers = selectedSegment === 'All' 
+                ? customers.slice(0, 50)
+                : customers.filter(customer => customer.segment === selectedSegment);
+
+            tbody.innerHTML = '';
+
+            filteredCustomers.forEach((customer, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${customer.clientId}</td>
+                    <td>${customer.attritionFlag}</td>
+                    <td>${customer.age}</td>
+                    <td>${customer.gender}</td>
+                    <td>${customer.incomeCategory}</td>
+                    <td>${customer.cardCategory}</td>
+                    <td>
+                        <span class="segment-badge ${getSegmentClass(customer.segment)}">
+                            ${customer.segment.toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="send-offer-btn" onclick="sendOffer(${JSON.stringify(customer).replace(/"/g, '&quot;')})">
+                            SEND OFFER
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('showing-count').textContent = `Showing ${filteredCustomers.length} customers`;
+        }
+
+        function setActiveFilter(segment) {
+            selectedSegment = segment;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-segment="${segment}"]`).classList.add('active');
+
+
+            
+            renderCustomers();
+        }
+
+        function sendOffer(customer) {
+            document.getElementById('customer-details').innerHTML = `
+                <li>• Customer ID: ${customer.clientId}</li>
+                <li>• Segment: ${customer.segment}</li>
+                <li>• Age: ${customer.age}</li>
+                <li>• Card Category: ${customer.cardCategory}</li>
+            `;
+            
+            document.getElementById('recommended-offers').textContent = customer.recommendedOffers.join('; ');
+            
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCustomers();
+            renderCustomers();
+            
+            // Add event listeners to filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setActiveFilter(this.dataset.segment);
+                });
+            });
+            
+            // Initialize Feather icons
+            feather.replace();
+            
+            // Close modal when clicking outside
+            document.getElementById('modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Aetherion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar (fixed version) -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <!-- Left side -->
+        <div class="navbar-left">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="navbar-brand">
+                <i class="fas fa-chart-line"></i>
+                <span>Aetherion</span>
+            </div>
+        </div>
+
+        <!-- Right side -->
+        <div class="navbar-right">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('auth.logout') }}" class="login-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-container">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ current_user.name if current_user.is_authenticated else 'User' }}! Monitor your AI-powered customer retention insights.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- AI Recommendations Card -->
+            <div class="dashboard-card" data-card="ai-recommendations">
+                <div class="card-icon ai-recommendations">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Recommendations</h3>
+                    <p>Get intelligent recommendations for customer retention strategies based on advanced ML algorithms.</p>
+                </div>
+                <button class="card-button" onclick="navigateToFeature('ai-recommendations')">
+                    <span>Explore AI</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Customer Segmentation Card -->
+            <div class="dashboard-card" data-card="customer-segmentation">
+                <div class="card-icon customer-segmentation">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Customer Segmentation</h3>
+                    <p>Automatically segment customers based on behavior patterns and engagement levels.</p>
+                    <div class="card-stats">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label">Active Segments</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="navigateToFeature('customer-segmentation')">
+                    <span>View Segments</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- E-KYC Issues Card -->
+            <div class="dashboard-card" data-card="ekyc-issues">
+                <div class="card-icon ekyc-issues">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="card-content">
+                    <h3>E-KYC Issues</h3>
+                    <p>Monitor and resolve electronic Know Your Customer verification issues and compliance matters.</p>
+                    <div class="card-stats">
+                        <span class="stat-number">87.3%</span>
+                        <span class="stat-label">Model Accuracy</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="navigateToFeature('ekyc-issues')">
+                    <span>Resolve Issues</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Feedback Support Card -->
+            <div class="dashboard-card" data-card="feedback-support">
+                <div class="card-icon feedback-support">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Feedback Support</h3>
+                    <p>Analyze customer feedback with sentiment analysis and automated response suggestions.</p>
+                    <div class="card-stats">
+                        <span class="stat-number">156</span>
+                        <span class="stat-label">Recent Feedback</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="navigateToFeature('feedback-support')">
+                    <span>Analyze Feedback</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Smart Document Verification Card -->
+            <!-- Analytics Dashboard Card -->
+<div class="dashboard-card" data-card="analytics-dashboard">
+    <div class="card-icon analytics-dashboard">
+        <i class="fas fa-chart-line"></i> <!-- Changed icon to a chart for analytics -->
+    </div>
+    <div class="card-content">
+        <h3>Analytics Dashboard</h3>
+        <p>Real-time insights and performance tracking with interactive visualizations.</p>
+        <div class="card-stats">
+            <span class="stat-number">10000</span> <!-- Changed to show accuracy -->
+            <span class="stat-label">Customers</span>
+        </div>
+    </div>
+    <button class="card-button" onclick="navigateToFeature('analytics-dashboard')">
+        <span>View Dashboard</span>
+        <i class="fas fa-arrow-right"></i>
+    </button>
+</div>
+
+            <!-- Maintenance Fee Card -->
+            <div class="dashboard-card" data-card="maintenance-fee">
+                <div class="card-icon maintenance-fee">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="card-content">
+                    <h3>Maintenance Fee</h3>
+                    <p>Track and manage maintenance fees with automated billing and payment processing.</p>
+                    <div class="card-stats">
+                        <span class="stat-number">87%</span>
+                        <span class="stat-label">Model Accuracy</span>
+                    </div>
+                </div>
+                <button class="card-button" onclick="navigateToFeature('maintenance-fee')">
+                    <span>Manage Fees</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="quick-stats">
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">98.7%</span>
+                    <span class="stat-title">Random Forest</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">10,000</span>
+                    <span class="stat-title">Customers</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-trending-up"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">+12.4%</span>
+                    <span class="stat-title">Retention Rate</span>
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <span class="stat-value">2.3s</span>
+                    <span class="stat-title">Avg Response Time</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
