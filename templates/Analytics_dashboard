@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Customer Retention Dashboard — Preview</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{margin:0;background:#764ba2;color:#010b18;font-family:Inter,Arial,sans-serif;padding:24px}
+    .container{max-width:1320px;margin:0 auto}
+    header{margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .sub{color:#9aa4bd;font-size:13px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+    .card{background:hwb(210 91% 8%);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .kpi-title{color:#9aa4bd;font-size:12px}
+    .kpi-value{font-size:20px;font-weight:700;margin-top:6px}
+    .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    canvas{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px}
+    .small-chart{height:260px}
+    .big-chart{height:360px}
+    .table{width:100%;border-collapse:collapse;margin-top:8px}
+    .table th,.table td{padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);font-size:13px}
+    footer{margin-top:18px;color:#9aa4bd;font-size:13px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Customer Retention </h1>
+      
+    </header>
+
+    <!-- KPI cards -->
+    <section class="kpi-grid">
+      <div class="card"><div class="kpi-title">Total Customers</div><div class="kpi-value">10,000</div></div>
+      <div class="card"><div class="kpi-title">Overall Churn Rate</div><div class="kpi-value">~16%</div></div>
+      <div class="card"><div class="kpi-title">Avg Engagement Score</div><div class="kpi-value">~3.5</div></div>
+      <div class="card"><div class="kpi-title">High Value Customers</div><div class="kpi-value">7.9% churn</div></div>
+    </section>
+
+    <!-- Main charts -->
+    <section class="grid-2">
+      <div class="card">
+        <strong>Churn Trend Over Time</strong>
+        <canvas id="churnTrend" class="big-chart"></canvas>
+      </div>
+      <div style="display:grid;gap:12px">
+        <div class="card"><strong>Churn by Segment</strong><canvas id="churnBySegment" class="small-chart"></canvas></div>
+        <div class="card"><strong>Verification Method Impact</strong><canvas id="verificationImpact" class="small-chart"></canvas></div>
+      </div>
+    </section>
+
+    <section class="grid-3" style="margin-top:12px">
+      <div class="card"><strong>Engagement Score Distribution</strong><canvas id="engagementDist" class="small-chart"></canvas></div>
+      <div class="card"><strong>Age Group vs Churn</strong><canvas id="ageChurn" class="small-chart"></canvas></div>
+      <div class="card"><strong>Avg Monthly Balance vs Churn</strong><canvas id="balanceChurn" class="small-chart"></canvas></div>
+    </section>
+
+    <section style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px">
+      <div class="card">
+        <strong>Top Customers (sample)</strong>
+        <table class="table">
+          <thead><tr><th>ClientNum</th><th>Segment</th><th>Churn</th><th>Engagement</th><th>Last Trans (days)</th></tr></thead>
+          <tbody>
+            <tr><td>768805383</td><td>Dormant</td><td>No</td><td>7.37</td><td>27</td></tr>
+            <tr><td>818770008</td><td>Dormant</td><td>No</td><td>4.21</td><td>39</td></tr>
+            <tr><td>713982108</td><td>Dormant</td><td>No</td><td>0.88</td><td>51</td></tr>
+            <tr><td>769911858</td><td>At Risk</td><td>No</td><td>3.95</td><td>49</td></tr>
+            <tr><td>709106358</td><td>Dormant</td><td>No</td><td>4.47</td><td>22</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card"><strong>Recommended Offers Breakdown</strong><canvas id="offers" class="small-chart"></canvas></div>
+    </section>
+
+    <footer>Preview HTML populated with actual aggregated values from dataset</footer>
+  </div>
+
+  <script>
+    // Real aggregated data arrays
+    const churnTrendLabels = ["0-6","7-12","13-24","25-36","37-48","49-60","60+"];
+    const churnTrendValues = [16.4,14.4,17.4,16.8,14.5,0,0];
+
+    const segmentLabels = ["At Risk","Dormant","High Value","Loyal","Stable"];
+    const segmentChurn = [14.1,28.8,7.9,16.6,8.6];
+
+    const verificationLabels = ["Automated Biometric","Hybrid","Manual Review","OCR"];
+    const verificationChurn = [15.4,17.1,17.2,15.1];
+
+    const engagementLabels = [0,1,2,3,4,5];
+    const engagementCounts = [21,269,736,1348,2008,0];
+
+    const ageLabels = ["26-35","36-45","46-60","60+"];
+    const ageChurnValues = [12.6,16.1,16.4,14.1];
+
+    const balanceLabels = ["Retained","Churned"];
+    const balanceValues = [60853,59899];
+
+    const offersLabels = ["Upsell / Cross-sell","Reactivation","VIP / Concierge","Cashback / Personalized","Referral / Perks"];
+    const offersCounts = [3054,2754,1524,1373,1295];
+
+    // Chart rendering
+    new Chart(document.getElementById('churnTrend'),{
+      type:'line',
+      data:{labels:churnTrendLabels,datasets:[{label:'Churn %',data:churnTrendValues,borderWidth:2,tension:0.3}]},
+      options:{scales:{y:{ticks:{callback:v=>v+"%"}}},plugins:{legend:{display:false}}}
+    });
+
+    new Chart(document.getElementById('churnBySegment'),{
+      type:'bar',
+      data:{labels:segmentLabels,datasets:[{data:segmentChurn}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+"%"}}}}
+    });
+
+    new Chart(document.getElementById('verificationImpact'),{
+      type:'pie',
+      data:{labels:verificationLabels,datasets:[{data:verificationChurn}]}
+    });
+
+    new Chart(document.getElementById('engagementDist'),{
+      type:'bar',
+      data:{labels:engagementLabels,datasets:[{data:engagementCounts}]},
+      options:{plugins:{legend:{display:false}}}
+    });
+
+    new Chart(document.getElementById('ageChurn'),{
+      type:'line',
+      data:{labels:ageLabels,datasets:[{data:ageChurnValues}]},
+      options:{scales:{y:{ticks:{callback:v=>v+"%"}}},plugins:{legend:{display:false}}}
+    });
+
+    new Chart(document.getElementById('balanceChurn'),{
+      type:'doughnut',
+      data:{labels:balanceLabels,datasets:[{data:balanceValues}]}
+    });
+
+    new Chart(document.getElementById('offers'),{
+      type:'bar',
+      data:{labels:offersLabels,datasets:[{data:offersCounts}]},
+      options:{plugins:{legend:{display:false}}}
+    });
+  </script>
+</body>
+</html>
