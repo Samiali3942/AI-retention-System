@@ -382,13 +382,7 @@ if __name__ == '__main__':
     print("  📊 Sample Data: Loaded")
     print("-" * 70)
     print("Model Status:")
-    if kyc_churn_model is not None:
-        print("  🤖 KYC Churn Model: ✓ Loaded")
-        print(f"  📁 Model File: {'✓' if os.path.exists('models/kyc_churn_model.pkl') else '✗'}")
-    else:
-        print("  🤖 KYC Churn Model: ✗ Not available")
-        print("  💡 Place kyc_churn_model.pkl in models/ folder")
-    print("=" * 70)
+
     
     # Start the development server
     app.run(debug=True, host='0.0.0.0', port=5000)
