@@ -142,6 +142,28 @@ def maintenance_fee():
     except Exception as e:
         print(f"Error loading maintenance fee: {e}")
         return render_template('errors/500.html'), 500
+    
+@dashboard_bp.route('/analytics-dashboard')
+@login_required
+def analytics_dashboard():
+    """Analytics Dashboard feature page"""
+    try:
+        # Here you can load or simulate analytics data
+        # Example placeholder data (replace with real queries later)
+        dashboard_data = {
+            "total_customers": 1250,
+            "active_customers": 1120,
+            "churn_rate": 0.08,
+            "monthly_growth": 0.12,
+            "top_segments": ["High Value", "Loyal", "At Risk"]
+        }
+
+        return render_template('Analytics_dashboard.html',
+                               dashboard_data=dashboard_data,
+                               current_user=get_current_user())
+    except Exception as e:
+        print(f"Error loading analytics dashboard: {e}")
+        return render_template('errors/500.html'), 500
 
 # API endpoints
 @dashboard_bp.route('/api/stats')
